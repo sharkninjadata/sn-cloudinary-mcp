@@ -7,6 +7,9 @@ A Model Context Protocol (MCP) server providing Cloudinary media management and 
 - Retrieve asset metadata by `public_id`.
 - Search assets via Cloudinary's advanced search expressions (tags, folder, format, etc.).
 - Generate transformed delivery URLs (resize, format, quality, crop).
+- Manage tags (add, delete, replace), context metadata.
+- Rename, move, and delete assets.
+- List folders, perform explicit refresh operations.
 
 ## Getting Started
 
@@ -25,63 +28,65 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### 3. Run MCP Server
+### 3. Run MCP Server (JSON-RPC over stdio)
+Build then start:
 ```bash
 npm run build
 npm start
 ```
-Or with ts-node (dev):
+Dev mode (TypeScript directly):
 ```bash
 npm run dev
 ```
 
-The server will listen (stdio or chosen transport) as required by the MCP host (e.g. an AI assistant runtime).
+The server implements a simple newline-delimited JSON-RPC 2.0 protocol over stdin/stdout.
 
-### 4. Tools
-The manifest (`mcp-manifest.json`) lists available tools:
-- `cloudinary.upload`
-- `cloudinary.asset.get`
-- `cloudinary.asset.search`
-- `cloudinary.url.transform`
-
-### 5. Example Usage (Pseudo)
+### 4. JSON-RPC Protocol Outline
+Send requests as single-line JSON objects:
 ```json
-{
-  "tool": "cloudinary.url.transform",
-  "args": {
-    "public_id": "samples/cat",
-    "width": 400,
-    "height": 400,
-    "format": "webp",
-    "crop": "fill",
-    "quality": "auto"
-  }
-}
+{"jsonrpc":"2.0","id":"1","method":"invoke","params":{"tool":"cloudinary.url.transform","args":{"public_id":"samples/cat","width":400,"height":400,"format":"webp"}}}
+```
+Responses:
+```json
+{"jsonrpc":"2.0","id":"1","result":{"url":"https://..."}}
+```
+List tools:
+```json
+{"jsonrpc":"2.0","id":"2","method":"list_tools"}
+```
+Get manifest:
+```json
+{"jsonrpc":"2.0","id":"3","method":"get_manifest"}
 ```
 
-## Development
+### 5. Tools Summary
+- cloudinary.upload
+- cloudinary.asset.get
+- cloudinary.asset.search
+- cloudinary.url.transform
+- cloudinary.asset.update_tags (replace entire tag list)
+- cloudinary.asset.add_tags (add tags)
+- cloudinary.asset.delete_tags (remove specified tags)
+- cloudinary.asset.delete (delete asset)
+- cloudinary.folder.list (list subfolders for a prefix)
+- cloudinary.asset.move (move by assigning new folder path)
+- cloudinary.asset.rename (rename public_id)
+- cloudinary.asset.update_context (upsert context key-value metadata)
+- cloudinary.asset.explicit (explicit refresh / derived processing)
 
-### Scripts
-- `npm run dev` — ts-node watch
-- `npm run build` — TypeScript compile
-- `npm start` — run compiled server
+### 6. Development Scripts
+- build, dev, start, lint
 
-### Lint
-```bash
-npm run lint
-```
+### 7. Roadmap
+- Streaming recent uploads as resource events.
+- Signed upload presets.
+- Caching layer.
+- Additional context removal tool.
+- Bulk operations.
 
 ## Security Notes
-- Keep API Secret out of logs.
-- Consider rate limiting high-volume search or upload calls.
-- For production, set restrictive IAM / sub-account credentials.
-
-## Roadmap
-- Add resource streaming (recent uploads feed).
-- Add deletion tool.
-- Add metadata update tool.
-- Add signed upload (unsigned preset fallback).
-- Add caching layer for frequently requested assets.
+- Do not log secrets.
+- Consider rate limits on upload/search.
 
 ## License
 MIT
