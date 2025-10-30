@@ -12,12 +12,12 @@ export async function updateTagsTool(args: UpdateTagsArgs) {
   const current = await cloudinary.api.resource(public_id);
   const currentTags = current.tags || [];
 
-  const toRemove = currentTags.filter(t => !tags.includes(t));
+  const toRemove = currentTags.filter((t: string) => !tags.includes(t));
   for (const t of toRemove) {
     await cloudinary.uploader.remove_tag(t, [public_id]);
   }
 
-  const toAdd = tags.filter(t => !currentTags.includes(t));
+  const toAdd = tags.filter((t: string) => !currentTags.includes(t));
   for (const t of toAdd) {
     await cloudinary.uploader.add_tag(t, [public_id]);
   }

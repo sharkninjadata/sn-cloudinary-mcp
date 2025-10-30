@@ -10,7 +10,7 @@ export async function listFoldersTool(args: ListFoldersArgs) {
 
   const res = await cloudinary.api.sub_folders(path || '');
   return {
-    folders: (res.folders || []).map(f => ({
+    folders: (res.folders || []).map((f: { name: string; path: string }) => ({
       name: f.name,
       path: f.path
     }))

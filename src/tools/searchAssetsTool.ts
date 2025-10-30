@@ -19,7 +19,7 @@ export async function searchAssetsTool(args: SearchArgs) {
   return {
     total_count: res.total_count,
     next_cursor: res.next_cursor,
-    assets: res.resources.map(r => ({
+    assets: res.resources.map((r: { public_id: string; format: string; bytes: number; width: number; height: number; secure_url: string; tags: string[] }) => ({
       public_id: r.public_id,
       format: r.format,
       bytes: r.bytes,
